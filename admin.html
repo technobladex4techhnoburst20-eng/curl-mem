@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, viewport-fit=cover">
+  <title>Admin Panel | College Memories</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    :root { --bg: #f0f4f8; --bg-warm: #e3eaf3; --text: #1a2a40; --text-soft: #4a5e7a; --text-mute: #7a8fa8; --blue: #0056b3; --blue-deep: #003d80; --red: #dc3545; --green: #28a745; --yellow: #ffc107; --line: rgba(26, 42, 64, 0.14); --line-soft: rgba(26, 42, 64, 0.06); }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; overflow-x: hidden; margin: 0; padding: 0; touch-action: pan-y; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 300; line-height: 1.7; }
+    #bg-3d { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    .grid-bg { position: fixed; inset: 0; z-index: 1; pointer-events: none; background-image: linear-gradient(rgba(0,86,179,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,86,179,0.03) 1px, transparent 1px); background-size: 40px 40px; }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; background: rgba(240, 244, 248, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--line-soft); }
+    .nav__logo { display: flex; align-items: baseline; gap: 0.6rem; text-decoration: none; color: var(--text); }
+    .logo-mark { font-size: 1.4rem; } .logo-text { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 500; color: var(--blue-deep); }
+
+    .login-container { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8rem 2rem; }
+    .login-box { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); padding: 3rem; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.2); width: 100%; max-width: 400px; text-align: center; }
+    .login-box h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--blue-deep); margin-bottom: 0.5rem; }
+    .login-box p { color: var(--text-mute); margin-bottom: 2rem; }
+    .login-input { width: 100%; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--line); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; transition: border-color 0.3s; }
+    .login-input:focus { border-color: var(--blue); }
+    .login-btn { width: 100%; padding: 1rem; background: var(--blue-deep); color: #fff; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.3s; }
+    .login-btn:hover { background: var(--blue); }
+
+    .dashboard { position: relative; z-index: 2; padding: 8rem 2rem 4rem; max-width: 1200px; margin: 0 auto; display: none; }
+    .dashboard.active { display: block; }
+    .dash-header { text-align: center; margin-bottom: 3rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .dash-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--text); }
+    .dash-header p { color: var(--text-mute); }
+    .dash-btn-row { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .refresh-btn { background: var(--blue-deep); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.9rem; }
+    .test-btn { background: var(--yellow); color: #1a2a40; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .stat-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--line-soft); text-align: center; }
+    .stat-card h3 { font-size: 2.5rem; color: var(--blue-deep); font-family: 'JetBrains Mono', monospace; }
+    .stat-card span { font-size: 0.9rem; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    .section { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--line-soft); overflow-x: auto; }
+    .section h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--blue-deep); margin-bottom: 1.5rem; border-bottom: 1px solid var(--line-soft); padding-bottom: 0.5rem; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 0.9rem; min-width: 600px; }
+    .data-table th { text-align: left; padding: 0.8rem; border-bottom: 1px solid var(--line); color: var(--text-soft); font-weight: 500; }
+    .data-table td { padding: 0.8rem; border-bottom: 1px solid var(--line-soft); color: var(--text); vertical-align: middle; }
+    .data-table tr:hover { background: rgba(0, 86, 179, 0.03); }
+
+    .status-badge { padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; display: inline-block; }
+    .status-active { background: rgba(40, 167, 69, 0.15); color: var(--green); border: 1px solid var(--green); }
+    .status-blocked { background: rgba(220, 53, 69, 0.15); color: var(--red); border: 1px solid var(--red); }
+    .status-deactivated { background: rgba(108, 117, 125, 0.15); color: #6c757d; border: 1px solid #6c757d; }
+
+    .action-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .btn-delete { background: none; border: 1px solid var(--red); color: var(--red); padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
+    .btn-delete:hover { background: var(--red); color: #fff; }
+    .btn-warn { background: none; border: 1px solid var(--yellow); color: #b58100; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
+    .btn-warn:hover { background: var(--yellow); color: #1a2a40; }
+    .btn-success { background: none; border: 1px solid var(--green); color: var(--green); padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
+    .btn-success:hover { background: var(--green); color: #fff; }
+
+    .btn-danger-large { background: var(--red); color: #fff; border: none; padding: 1rem 2rem; border-radius: 8px; font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; display: block; margin: 2rem auto; transition: background 0.3s; }
+    .btn-danger-large:hover { background: #c82333; }
+
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem; }
+    .media-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #000; }
+    .media-item img, .media-item video { width: 100%; height: 100%; object-fit: cover; }
+    .media-item .btn-delete { position: absolute; top: 5px; right: 5px; padding: 0.2rem 0.5rem; font-size: 0.7rem; background: rgba(220, 53, 69, 0.8); color: #fff; border: none; }
+    .no-data { color: var(--text-mute); font-style: italic; text-align: center; padding: 2rem; }
+
+    .footer { background: var(--text); color: var(--bg); padding: 3rem 2rem; text-align: center; position: relative; z-index: 2; margin-top: 4rem; }
+    .footer a { color: var(--blue); text-decoration: none; }
+
+    @media (max-width: 768px) { .nav { padding: 1rem; } .dashboard { padding: 6rem 1rem; } }
+  </style>
+</head>
+<body>
+  <canvas id="bg-3d"></canvas>
+  <div class="grid-bg"></div>
+
+  <nav class="nav">
+    <a href="index.html" class="nav__logo"><span class="logo-mark">🎓</span><span class="logo-text">Admin Panel</span></a>
+  </nav>
+
+  <div class="login-container" id="loginView">
+    <div class="login-box">
+      <h1>Admin Access</h1>
+      <p>Enter password to monitor and moderate</p>
+      <input type="password" id="adminPass" class="login-input" placeholder="Password" onkeypress="if(event.key==='Enter') checkPass()">
+      <button class="login-btn" onclick="checkPass()">Enter Dashboard</button>
+    </div>
+  </div>
+
+  <div class="dashboard" id="dashboardView">
+    <div class="dash-header">
+      <h2>Moderation Dashboard</h2>
+      <p>Monitor and keep the community safe</p>
+      <div class="dash-btn-row">
+        <button class="refresh-btn" onclick="loadDashboard()">🔄 Refresh Data</button>
+        <button class="test-btn" onclick="injectTestData()">🧪 Inject Test Data</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><h3 id="statUsers">0</h3><span>Users</span></div>
+      <div class="stat-card"><h3 id="statMsgs">0</h3><span>Public Msgs</span></div>
+      <div class="stat-card"><h3 id="statQuotes">0</h3><span>Quotes</span></div>
+      <div class="stat-card"><h3 id="statPhotos">0</h3><span>Photos</span></div>
+      <div class="stat-card"><h3 id="statReels">0</h3><span>Reels</span></div>
+    </div>
+
+    <div class="section">
+      <h3>Registered Users</h3>
+      <table class="data-table">
+        <thead><tr><th>UID</th><th>Username</th><th>Name</th><th>Phone</th><th>Branch</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>Public Chat Messages</h3>
+      <table class="data-table">
+        <thead><tr><th>Sender</th><th>Message</th><th>Time</th><th>Action</th></tr></thead>
+        <tbody id="msgsTable"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>Reported Messages</h3>
+      <table class="data-table">
+        <thead><tr><th>Reporter</th><th>Offender</th><th>Message</th><th>Action</th></tr></thead>
+        <tbody id="reportsTable"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>Quotes & Thoughts</h3>
+      <table class="data-table">
+        <thead><tr><th>Author</th><th>Quote</th><th>Action</th></tr></thead>
+        <tbody id="quotesTable"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>Yearbook Photos</h3>
+      <div class="media-grid" id="photosGrid"></div>
+    </div>
+
+    <div class="section">
+      <h3>Uploaded Reels</h3>
+      <div class="media-grid" id="reelsGrid"></div>
+    </div>
+
+    <button class="btn-danger-large" onclick="wipeAll()">⚠️ Wipe All Data (Reset Site)</button>
+  </div>
+
+  <footer class="footer">
+    <p>College Memories Admin · <a href="index.html">Back to Site</a></p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Force HTTPS Security
+    if (location.protocol !== 'https:' && location.hostname !== '' && location.hostname !== 'localhost' && !location.hostname.startsWith('127.')) { location.replace(`https://${location.hostname}${location.pathname}${location.search}`); }
+
+    // Safe storage wrapper
+    const safeStorage = {
+      get: (k) => { try { return localStorage.getItem(k); } catch(e) { return null; } },
+      set: (k, v) => { try { localStorage.setItem(k, v); } catch(e) { console.warn("Storage full"); } },
+      remove: (k) => { try { localStorage.removeItem(k); } catch(e) {} }
+    };
+
+    // 3D Background Optimized for Mobile
+    let bgScene, bgCamera, bgRenderer, petals3D = []; let mouseX3D = 0, mouseY3D = 0; const isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    function init3DBackground() {
+      try {
+        const canvas = document.getElementById('bg-3d'); if (!canvas || typeof THREE === 'undefined') return;
+        bgScene = new THREE.Scene(); bgScene.fog = new THREE.FogExp2(0xf0f4f8, 0.015);
+        bgCamera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000); bgCamera.position.z = 30;
+        bgRenderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true, powerPreference: 'high-performance' });
+        bgRenderer.setSize(innerWidth, innerHeight); bgRenderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
+        const petalCanvas = document.createElement('canvas'); petalCanvas.width = 64; petalCanvas.height = 64;
+        const pctx = petalCanvas.getContext('2d'); pctx.translate(32, 32); pctx.beginPath(); pctx.moveTo(0, -20);
+        pctx.bezierCurveTo(15, -15, 15, 15, 0, 20); pctx.bezierCurveTo(-15, 15, -15, -15, 0, -20);
+        pctx.fillStyle = 'rgba(0, 102, 204, 0.8)'; pctx.fill(); const petalTexture = new THREE.CanvasTexture(petalCanvas);
+        const petalMaterial = new THREE.MeshBasicMaterial({ map: petalTexture, transparent: true, side: THREE.DoubleSide, depthWrite: false });
+        const petalCount = isMobile ? 40 : 200;
+        for (let i = 0; i < petalCount; i++) {
+          const size = Math.max(0.3, Math.random() * 1.5 + 0.5); const geometry = new THREE.PlaneGeometry(size, size);
+          const petal = new THREE.Mesh(geometry, petalMaterial);
+          petal.position.set((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 60);
+          petal.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+          petal.userData = { speed: Math.random() * 0.05 + 0.02, rotSpeed: (Math.random() - 0.5) * 0.02, sway: Math.random() * Math.PI * 2, baseX: petal.position.x };
+          bgScene.add(petal); petals3D.push(petal);
+        }
+        addEventListener('resize', () => { bgCamera.aspect = innerWidth / innerHeight; bgCamera.updateProjectionMatrix(); bgRenderer.setSize(innerWidth, innerHeight); });
+        animate3D();
+      } catch (err) { console.error("3D Background crashed safely:", err); }
+    }
+    function animate3D() {
+      requestAnimationFrame(animate3D); if(!bgRenderer) return;
+      const t = performance.now() * 0.001;
+      petals3D.forEach(petal => {
+        petal.position.y -= petal.userData.speed; petal.position.x = petal.userData.baseX + Math.sin(t + petal.userData.sway) * 2;
+        petal.rotation.z += petal.userData.rotSpeed; petal.rotation.x += petal.userData.rotSpeed * 0.5;
+        if (petal.position.y < -40) { petal.position.y = 40; petal.position.x = (Math.random() - 0.5) * 80; petal.userData.baseX = petal.position.x; }
+      });
+      bgCamera.position.x += (mouseX3D * 5 - bgCamera.position.x) * 0.03;
+      bgCamera.position.y += (-mouseY3D * 5 - bgCamera.position.y) * 0.03;
+      bgCamera.lookAt(bgScene.position); bgRenderer.render(bgScene, bgCamera);
+    }
+    addEventListener('mousemove', e => { mouseX3D = (e.clientX / innerWidth - 0.5); mouseY3D = (e.clientY / innerHeight - 0.5); });
+    init3DBackground();
+
+    const ADMIN_PASS = "royalmech";
+    function checkPass() {
+      const pass = document.getElementById('adminPass').value;
+      if (pass === ADMIN_PASS) {
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('dashboardView').classList.add('active');
+        loadDashboard();
+      } else { alert("Incorrect Password"); }
+    }
+
+    const K = { users: 'college_users', msgs: 'sky_whispers', quotes: 'college_quotes', photos: 'garden_memories_permanent', chats: 'college_private_chats', reports: 'college_reports' };
+
+    function loadDashboard() {
+      let users = JSON.parse(safeStorage.get(K.users) || '[]');
+      let msgs = JSON.parse(safeStorage.get(K.msgs) || '[]');
+      let quotes = JSON.parse(safeStorage.get(K.quotes) || '[]');
+      let photos = JSON.parse(safeStorage.get(K.photos) || '[]');
+      let reports = JSON.parse(safeStorage.get(K.reports) || '[]');
+
+      document.getElementById('statUsers').innerText = users.length;
+      document.getElementById('statMsgs').innerText = msgs.length;
+      document.getElementById('statQuotes').innerText = quotes.length;
+      document.getElementById('statPhotos').innerText = photos.length;
+
+      let usersHTML = '';
+      users.forEach((u, i) => {
+        const status = u.status || 'active';
+        let statusBadge = `<span class="status-badge status-${status}">${status}</span>`;
+        let actions = '';
+        if (status === 'active') { actions = `<button class="btn-warn" onclick="setUserStatus(${i}, 'blocked')">Block</button><button class="btn-warn" onclick="setUserStatus(${i}, 'deactivated')">Deactivate</button>`; }
+        else if (status === 'blocked') { actions = `<button class="btn-success" onclick="setUserStatus(${i}, 'active')">Activate</button><button class="btn-warn" onclick="setUserStatus(${i}, 'deactivated')">Deactivate</button>`; }
+        else if (status === 'deactivated') { actions = `<button class="btn-success" onclick="setUserStatus(${i}, 'active')">Activate</button><button class="btn-warn" onclick="setUserStatus(${i}, 'blocked')">Block</button>`; }
+        actions += `<button class="btn-delete" onclick="delUser(${i})">Delete</button>`;
+        usersHTML += `<tr><td>${u.uid}</td><td>${u.username}</td><td>${u.name}</td><td>${u.phone || 'N/A'}</td><td>${u.branch || 'N/A'}</td><td>${statusBadge}</td><td><div class="action-btns">${actions}</div></td></tr>`;
+      });
+      document.getElementById('usersTable').innerHTML = usersHTML || '<tr><td colspan="7" class="no-data">No users registered</td></tr>';
+
+      let msgsHTML = '';
+      msgs.forEach((m, i) => { const sender = users.find(u => u.uid === m.sender); const senderName = sender ? sender.name : m.sender; const time = new Date(m.timestamp).toLocaleString(); msgsHTML += `<tr><td>${senderName}</td><td>${m.text}</td><td>${time}</td><td><button class="btn-delete" onclick="delMsg(${i})">Delete</button></td></tr>`; });
+      document.getElementById('msgsTable').innerHTML = msgsHTML || '<tr><td colspan="4" class="no-data">No messages</td></tr>';
+
+      let reportsHTML = '';
+      reports.forEach((r, i) => { const reporter = users.find(u => u.uid === r.reporter); const offender = users.find(u => u.uid === r.offender); reportsHTML += `<tr><td>${reporter ? reporter.name : r.reporter}</td><td>${offender ? offender.name : r.offender}</td><td>${r.text}</td><td><button class="btn-delete" onclick="delReport(${i})">Dismiss</button></td></tr>`; });
+      document.getElementById('reportsTable').innerHTML = reportsHTML || '<tr><td colspan="4" class="no-data">No reports</td></tr>';
+
+      let quotesHTML = '';
+      quotes.forEach((q, i) => { quotesHTML += `<tr><td>${q.author || 'Anon'}</td><td>${q.text}</td><td><button class="btn-delete" onclick="delQuote(${i})">Delete</button></td></tr>`; });
+      document.getElementById('quotesTable').innerHTML = quotesHTML || '<tr><td colspan="3" class="no-data">No quotes</td></tr>';
+
+      let photosHTML = '';
+      photos.forEach((p, i) => { photosHTML += `<div class="media-item"><img src="${p.src}"><button class="btn-delete" onclick="delPhoto(${i})">×</button></div>`; });
+      document.getElementById('photosGrid').innerHTML = photosHTML || '<p class="no-data">No photos uploaded</p>';
+
+      loadReels();
+    }
+
+    function injectTestData() {
+      let users = JSON.parse(safeStorage.get(K.users) || '[]');
+      users.push({ uid: 'USR-TEST', username: 'TestUser', password: 'password', name: 'Test Student', phone: '9876543210', branch: 'Computer Science', location: 'Hubli', dob: '2005-01-01', status: 'active' });
+      safeStorage.set(K.users, JSON.stringify(users));
+      alert("Test user injected! If you see them in the table, the Admin Panel is working perfectly.");
+      loadDashboard();
+    }
+
+    function setUserStatus(i, status) { let users = JSON.parse(safeStorage.get(K.users) || '[]'); if (users[i]) { users[i].status = status; safeStorage.set(K.users, JSON.stringify(users)); loadDashboard(); } }
+    function delUser(i) { if (!confirm("Delete this user permanently?")) return; let users = JSON.parse(safeStorage.get(K.users) || '[]'); users.splice(i, 1); safeStorage.set(K.users, JSON.stringify(users)); loadDashboard(); }
+    function delMsg(i) { let msgs = JSON.parse(safeStorage.get(K.msgs) || '[]'); msgs.splice(i, 1); safeStorage.set(K.msgs, JSON.stringify(msgs)); loadDashboard(); }
+    function delReport(i) { let reports = JSON.parse(safeStorage.get(K.reports) || '[]'); reports.splice(i, 1); safeStorage.set(K.reports, JSON.stringify(reports)); loadDashboard(); }
+    function delQuote(i) { let quotes = JSON.parse(safeStorage.get(K.quotes) || '[]'); quotes.splice(i, 1); safeStorage.set(K.quotes, JSON.stringify(quotes)); loadDashboard(); }
+    function delPhoto(i) { let photos = JSON.parse(safeStorage.get(K.photos) || '[]'); photos.splice(i, 1); safeStorage.set(K.photos, JSON.stringify(photos)); loadDashboard(); }
+
+    let db;
+    function loadReels() {
+      try {
+        let req = indexedDB.open("CollegeReelsDB", 1);
+        req.onupgradeneeded = e => { let database = e.target.result; if (!database.objectStoreNames.contains('reels')) { database.createObjectStore('reels', { keyPath: 'id', autoIncrement: true }); } };
+        req.onsuccess = e => { db = e.target.result; let tx = db.transaction("reels", "readonly"); let store = tx.objectStore("reels"); let req2 = store.getAll(); req2.onsuccess = ev => { let reels = ev.target.result; document.getElementById('statReels').innerText = reels.length; let html = ''; reels.forEach(reel => { let url = URL.createObjectURL(reel.blob); html += `<div class="media-item"><video src="${url}" muted></video><button class="btn-delete" onclick="delReel(${reel.id})">×</button></div>`; }); document.getElementById('reelsGrid').innerHTML = html || '<p class="no-data">No reels uploaded</p>'; }; };
+      } catch(err) { console.warn("IndexedDB blocked"); }
+    }
+    function delReel(id) { let tx = db.transaction("reels", "readwrite"); let store = tx.objectStore("reels"); store.delete(id); tx.oncomplete = () => loadDashboard(); }
+
+    function wipeAll() {
+      if (!confirm("ARE YOU ABSOLUTELY SURE? This will delete ALL users, messages, quotes, photos, and reels from this browser.")) return;
+      safeStorage.remove(K.users); safeStorage.remove(K.msgs); safeStorage.remove(K.quotes); safeStorage.remove(K.photos); safeStorage.remove(K.chats); safeStorage.remove(K.reports);
+      let req = indexedDB.deleteDatabase("CollegeReelsDB"); req.onsuccess = () => { alert("All data has been wiped."); loadDashboard(); };
+    }
+  </script>
+</body>
+</html>

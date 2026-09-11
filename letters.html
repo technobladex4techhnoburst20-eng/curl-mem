@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, viewport-fit=cover">
+  <title>College Memories | Campus Notes</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&family=Noto+Sans+Kannada:wght@300;400;500&family=Caveat&display=swap">
+  <style>
+    :root {
+      --bg: #f0f4f8;
+      --bg-warm: #e3eaf3;
+      --text: #1a2a40;
+      --text-soft: #4a5e7a;
+      --text-mute: #7a8fa8;
+      --sage: #8a9a7b;
+      --sage-deep: #6b7a5e;
+      --blue: #0056b3;
+      --blue-deep: #003d80;
+      --sand: #e8dfd2;
+      --line: rgba(26, 42, 64, 0.14);
+      --line-soft: rgba(26, 42, 64, 0.06);
+      --ease-quiet: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; overflow-x: hidden; touch-action: pan-y; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 300; line-height: 1.7; }
+
+    #bg-3d { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    .grid-bg { position: fixed; inset: 0; z-index: 1; pointer-events: none; background-image: linear-gradient(rgba(0,86,179,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,86,179,0.03) 1px, transparent 1px); background-size: 40px 40px; }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; background: rgba(240, 244, 248, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--line-soft); }
+    .nav__logo { display: flex; align-items: baseline; gap: 0.6rem; text-decoration: none; color: var(--text); }
+    .logo-mark { font-size: 1.4rem; }
+    .logo-text { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 500; color: var(--blue-deep); }
+    .nav__links { display: flex; list-style: none; gap: 2rem; }
+    .nav__links a { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-soft); text-decoration: none; transition: color 300ms; display: flex; flex-direction: column; align-items: center; }
+    .nav__links a span.kn { font-family: 'Noto Sans Kannada', sans-serif; font-size: 10px; text-transform: none; letter-spacing: 0; margin-top: 2px; opacity: 0.7; }
+    .nav__links a:hover, .nav__links a.active { color: var(--blue-deep); }
+
+    .hero { min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 8rem 1.5rem 4rem; position: relative; z-index: 2; text-align: center; }
+    .hero__bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+    .hero__bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.4; }
+    .hero__bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(240,244,248,0.4) 0%, rgba(240,244,248,0.8) 70%, rgba(240,244,248,0.95) 100%); }
+    .hero__content { position: relative; z-index: 3; max-width: 760px; }
+    .hero__title { font-family: 'Cormorant Garamond', serif; font-size: clamp(3rem, 9vw, 6rem); font-weight: 500; line-height: 0.95; margin-bottom: 0.5rem; color: var(--text); }
+    .hero__title-kn { font-family: 'Noto Sans Kannada', sans-serif; font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 400; color: var(--text-soft); display: block; }
+    .eyebrow { display: inline-block; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: var(--blue-deep); margin-bottom: 2rem; }
+
+    .letter-section { padding: 4rem 2rem 8rem; position: relative; z-index: 2; max-width: 800px; margin: 0 auto; }
+    .envelope-wrap { perspective: 1000px; margin-bottom: 6rem; text-align: center; }
+    .envelope { position: relative; width: 100%; max-width: 600px; height: 400px; margin: 0 auto; transform-style: preserve-3d; transition: transform 1.5s var(--ease-quiet); cursor: pointer; }
+    .envelope.is-open { transform: rotateX(0deg) translateY(-50px); }
+    .envelope-front { position: absolute; inset: 0; background: var(--sand); border-radius: 4px; box-shadow: 0 20px 50px -15px rgba(26,42,64,0.3); z-index: 2; display: flex; align-items: center; justify-content: center; font-family: 'Caveat', cursive; font-size: 1.5rem; color: var(--text-soft); flex-direction: column; }
+    .envelope-back { position: absolute; inset: 0; background: var(--bg-warm); border-radius: 4px; z-index: 0; }
+    .envelope-letter { position: absolute; top: 20px; left: 5%; width: 90%; height: 80%; background: #fdfaf3; padding: 2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); z-index: 1; transition: transform 1.5s var(--ease-quiet), opacity 1.5s; border-radius: 2px; overflow: hidden; }
+    .envelope.is-open .envelope-letter { transform: translateY(-100px); z-index: 3; }
+    .letter-text { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.8; color: var(--text); }
+    .letter-text-kn { font-family: 'Noto Sans Kannada', sans-serif; font-size: 1rem; color: var(--text-soft); margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line-soft); line-height: 1.6; }
+    .letter-sign { font-family: 'Caveat', cursive; font-size: 2rem; color: var(--blue-deep); margin-top: 2rem; text-align: right; }
+
+    .editable-img { cursor: pointer; position: relative; transition: filter 300ms; }
+    .editable-img:hover { filter: brightness(1.05); }
+    .editable-img::after { content: '📷'; position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0; transition: opacity 300ms; pointer-events: none; backdrop-filter: blur(4px); }
+    .editable-img:hover::after { opacity: 1; }
+
+    .quote-board-section { padding: 4rem 2rem 8rem; position: relative; z-index: 2; max-width: 800px; margin: 0 auto; }
+    .section-header { text-align: center; margin-bottom: 3rem; }
+    .quote-form { background: rgba(255, 255, 255, 0.8); padding: 2rem; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 3rem; backdrop-filter: blur(8px); }
+    .quote-input-author { width: 100%; margin-bottom: 1rem; padding: 0.8rem 1rem; border: 1px solid var(--line); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; color: var(--text); background: rgba(255,255,255,0.5); outline: none; }
+    .quote-textarea { width: 100%; min-height: 100px; margin-bottom: 1rem; padding: 0.8rem 1rem; border: 1px solid var(--line); border-radius: 8px; font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--text); background: rgba(255,255,255,0.5); resize: vertical; outline: none; }
+    .quote-submit-btn { background: var(--blue-deep); color: #fff; border: none; padding: 0.8rem 2rem; border-radius: 50px; font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; transition: all 300ms; display: block; margin: 0 auto; }
+    .quote-submit-btn:hover { background: var(--blue); }
+    .quotes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; }
+    .quote-card { background: #fdfaf3; padding: 1.5rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-left: 4px solid var(--blue); position: relative; }
+    .quote-card p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.6; color: var(--text); margin-bottom: 1rem; }
+    .quote-card .quote-author { font-family: 'Inter', sans-serif; font-size: 0.9rem; color: var(--blue-deep); font-weight: 500; }
+    .quote-delete { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-mute); cursor: pointer; font-size: 1rem; opacity: 0.5; transition: opacity 300ms; }
+    .quote-delete:hover { opacity: 1; color: var(--terracotta); }
+
+    .gesture-petal { position: fixed; width: 14px; height: 14px; background: #0056b3; border-radius: 0 100% 0 100%; pointer-events: none; z-index: 9999; opacity: 0.7; }
+
+    .mp-player { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9998; display: flex; align-items: center; gap: 0.9rem; padding: 0.6rem 1.1rem 0.6rem 0.6rem; background: rgba(240, 244, 248, 0.95); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 12px 30px -10px rgba(26,42,64,0.3); }
+    .mp-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--blue-deep); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 300ms; flex-shrink: 0; }
+    .mp-btn:hover { background: var(--blue); }
+    .mp-btn.is-playing { background: var(--sage-deep); }
+    .mp-icon { width: 16px; height: 16px; }
+    .mp-btn.is-playing .mp-icon-play { display: none; }
+    .mp-btn:not(.is-playing) .mp-icon-pause { display: none; }
+    .mp-info { display: flex; flex-direction: column; line-height: 1.2; max-width: 120px; overflow: hidden; }
+    .mp-title { font-family: 'Cormorant Garamond', serif; font-size: 0.92rem; color: var(--text); font-style: italic; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .mp-upload-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; opacity: 0.6; transition: opacity 300ms; padding: 0; display: flex; align-items: center; }
+
+    .footer { background: var(--text); color: var(--bg); padding: 5rem 2rem 3rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem; max-width: 1280px; margin: 0 auto; position: relative; z-index: 2; }
+    .footer__col h4 { font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 1rem; }
+    .footer__col a { color: var(--bg); text-decoration: none; opacity: 0.8; display: block; margin-bottom: 0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; }
+
+    @media (max-width: 768px) {
+      .nav { padding: 1rem 1.2rem; }
+      .nav__links { display: none; }
+      .envelope { height: 450px; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-3d"></canvas>
+  <div class="grid-bg"></div>
+
+  <nav class="nav">
+    <a href="index.html" class="nav__logo">
+      <span class="logo-mark">🎓</span>
+      <span class="logo-text">College Memories</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="index.html">Home<span class="kn">ಮುಖಪುಟ</span></a></li>
+      <li><a href="letters.html" class="active">Campus Notes<span class="kn">ಕ್ಯಾಂಪಸ್ ಟಿಪ್ಪಣಿಗಳು</span></a></li>
+      <li><a href="sky.html">Night Chats<span class="kn">ರಾತ್ರಿ ಚಾಟ್</span></a></li>
+      <li><a href="garden.html">The Yearbook<span class="kn">ಸ್ಮರಣಿಕೆ</span></a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero__bg">
+      <img src="https://images.unsplash.com/photo-1591564181489-5d17ef3e57c0?auto=format&fit=crop&w=1800&q=80" alt="Koala background" class="editable-img" data-img-id="letters-hero">
+    </div>
+    <div class="hero__content">
+      <span class="eyebrow">Campus Notes · Unsent Letters</span>
+      <h1 class="hero__title">Notes from<br>the Dorm</h1>
+      <span class="hero__title-kn">ವಸತಿನಿಲಯದಿಂದ ಟಿಪ್ಪಣಿಗಳು</span>
+    </div>
+  </section>
+
+  <section class="letter-section">
+    <div class="envelope-wrap">
+      <div class="envelope" id="env1" onclick="document.getElementById('env1').classList.toggle('is-open')">
+        <div class="envelope-back"></div>
+        <div class="envelope-letter">
+          <p class="letter-text">Dear Best Friend,</p>
+          <p class="letter-text" style="margin-top: 1rem;">Remember pulling all-nighters in the library, surviving on nothing but coffee and panic? I wouldn't trade those stressful, laughter-filled nights for anything. You made the hardest exams feel easy.</p>
+          <p class="letter-text-kn">ಗ್ರಂಥಾಲಯದಲ್ಲಿ ರಾತ್ರಿ ಜಾಗರಣೆ ಮಾಡಿದ ದಿನಗಳನ್ನು ನೆನಪಿಸಿಕೊಳ್ಳಿ, ಕೇವಲ ಕಾಫಿ ಮತ್ತು ಆತಂಕದಲ್ಲಿ ಬದುಕುಳಿಯುವುದು? ಆ ಒತ್ತಡದ, ನಗುವಿನಿಂದ ತುಂಬಿದ ರಾತ್ರಿಗಳನ್ನು ನಾನು ಯಾವುದಕ್ಕೂ ವಿನಿಮಯ ಮಾಡುವುದಿಲ್ಲ. ಕಠಿಣ ಪರೀಕ್ಷೆಗಳನ್ನು ಸಹ ನೀವು ಸುಲಭವಾಗಿಸಿದ್ದೀರಿ.</p>
+          <div class="letter-sign">— Your partner in crime</div>
+        </div>
+        <div class="envelope-front">
+          Tap to open<br>
+          <span style="font-family: 'Noto Sans Kannada', sans-serif; font-size: 1rem;">ತೆರೆಯಲು ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="envelope-wrap">
+      <div class="envelope" id="env2" onclick="document.getElementById('env2').classList.toggle('is-open')">
+        <div class="envelope-back"></div>
+        <div class="envelope-letter">
+          <p class="letter-text">Dear Professor,</p>
+          <p class="letter-text" style="margin-top: 1rem;">Thank you for pushing me when I wanted to give up. Your classes weren't just about the syllabus; they were about life. I carry your lessons with me every single day.</p>
+          <p class="letter-text-kn">ನಾನು ಸೋತುಹೋಗುತ್ತಿದ್ದಾಗ ನನ್ನನ್ನು ಮುಂದಕ್ಕೆ ತಳ್ಳಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು. ನಿಮ್ಮ ತರಗತಿಗಳು ಕೇವಲ ಪಠ್ಯಕ್ರಮದ ಬಗ್ಗೆ ಅಲ್ಲ; ಅವು ಜೀವನದ ಬಗ್ಗೆ ಇದ್ದವು. ನಿಮ್ಮ ಪಾಠಗಳನ್ನು ನಾನು ಪ್ರತಿದಿನ ನನ್ನೊಂದಿಗೆ ಒಯ್ಯುತ್ತೇನೆ.</p>
+          <div class="letter-sign">— Gratefully, your student</div>
+        </div>
+        <div class="envelope-front">
+          Tap to open<br>
+          <span style="font-family: 'Noto Sans Kannada', sans-serif; font-size: 1rem;">ತೆರೆಯಲು ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="quote-board-section">
+    <div class="section-header">
+      <span class="eyebrow">Wall of Thoughts · ಆಲೋಚನೆಗಳ ಗೋಡೆ</span>
+      <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--text);">Share Your Quotes</h2>
+    </div>
+    <div class="quote-form">
+      <input type="text" id="quoteAuthor" placeholder="Your Name · ನಿಮ್ಮ ಹೆಸರು" class="quote-input-author">
+      <textarea id="quoteText" placeholder="Write your quote or thought here... · ನಿಮ್ಮ ಆಲೋಚನೆ ಇಲ್ಲಿ ಬರೆಯಿರಿ..." class="quote-textarea"></textarea>
+      <button id="submitQuoteBtn" class="quote-submit-btn">Post Quote · ಪೋಸ್ಟ್ ಮಾಡಿ</button>
+    </div>
+    <div class="quotes-grid" id="quotesGrid"></div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer__col">
+      <h4>College Memories</h4>
+      <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; opacity: 0.8;">A digital time capsule for our batch. 🤍<br><span style="font-family: 'Noto Sans Kannada', sans-serif; font-size: 0.9rem;">ನಮ್ಮ ಬ್ಯಾಚ್‌ಗಾಗಿ ಡಿಜಿಟಲ್ ಟೈಮ್ ಕ್ಯಾಪ್ಸೂಲ್.</span></p>
+    </div>
+    <div class="footer__col">
+      <h4>Navigate</h4>
+      <a href="index.html">Home</a>
+      <a href="letters.html">Notes</a>
+      <a href="sky.html">Chats</a>
+      <a href="garden.html">Yearbook</a>
+    </div>
+    <div class="footer__col">
+      <h4>Admin</h4>
+      <a href="admin.html">🔐 Admin Panel</a>
+    </div>
+  </footer>
+
+  <div class="mp-player">
+    <input type="file" id="mpFileInput" accept="audio/*" hidden>
+    <button class="mp-btn" id="mpPlayBtn" aria-label="play music">
+      <svg class="mp-icon mp-icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="mp-icon mp-icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+    </button>
+    <div class="mp-info"><span class="mp-title" id="mpTitle">our song</span></div>
+    <button class="mp-upload-btn" id="mpUploadBtn" title="Upload your music">🎵</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Force HTTPS Security
+    if (location.protocol !== 'https:' && location.hostname !== '' && location.hostname !== 'localhost' && !location.hostname.startsWith('127.')) {
+      location.replace(`https://${location.hostname}${location.pathname}${location.search}`);
+    }
+
+    // Safe storage wrapper to prevent crashes on 1GB RAM phones
+    const safeStorage = {
+      get: (k) => { try { return localStorage.getItem(k); } catch(e) { return null; } },
+      set: (k, v) => { try { localStorage.setItem(k, v); } catch(e) { console.warn("Storage full"); } },
+      remove: (k) => { try { localStorage.removeItem(k); } catch(e) {} }
+    };
+
+    // Editable Images Logic
+    document.querySelectorAll('.editable-img').forEach(el => {
+      const id = el.dataset.imgId;
+      const saved = safeStorage.get('custom-img-' + id);
+      if (saved) el.src = saved;
+      el.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = e => {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const dataUrl = ev.target.result;
+            safeStorage.set('custom-img-' + id, dataUrl);
+            el.src = dataUrl;
+          };
+          reader.readAsDataURL(file);
+        };
+        input.click();
+      });
+    });
+
+    // Quote Board Logic
+    const quotesKey = 'college_quotes';
+    let quotes = JSON.parse(safeStorage.get(quotesKey) || '[]');
+    const quotesGrid = document.getElementById('quotesGrid');
+    const submitQuoteBtn = document.getElementById('submitQuoteBtn');
+
+    function renderQuotes() {
+      quotesGrid.innerHTML = '';
+      if (quotes.length === 0) {
+        quotesGrid.innerHTML = '<p style="text-align: center; color: var(--text-mute); font-style: italic; grid-column: 1 / -1;">No quotes shared yet. Be the first! · ಇನ್ನೂ ಯಾವುದೇ ಆಲೋಚನೆಗಳಿಲ್ಲ.</p>';
+        return;
+      }
+      quotes.forEach((q, i) => {
+        const card = document.createElement('div');
+        card.className = 'quote-card';
+        card.innerHTML = `<button class="quote-delete" data-i="${i}">×</button><p>"${q.text}"</p><div class="quote-author">- ${q.author || 'Anonymous'}</div>`;
+        quotesGrid.appendChild(card);
+      });
+    }
+
+    submitQuoteBtn.addEventListener('click', () => {
+      const author = document.getElementById('quoteAuthor').value.trim();
+      const text = document.getElementById('quoteText').value.trim();
+      if (!text) { alert("Please write a quote."); return; }
+      quotes.unshift({ author, text });
+      safeStorage.set(quotesKey, JSON.stringify(quotes));
+      document.getElementById('quoteAuthor').value = '';
+      document.getElementById('quoteText').value = '';
+      renderQuotes();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('quote-delete')) {
+        const i = parseInt(e.target.dataset.i);
+        quotes.splice(i, 1);
+        safeStorage.set(quotesKey, JSON.stringify(quotes));
+        renderQuotes();
+      }
+    });
+
+    renderQuotes();
+
+    // 3D Background Optimized for Mobile
+    let bgScene, bgCamera, bgRenderer, petals3D = [];
+    let mouseX3D = 0, mouseY3D = 0;
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+    function init3DBackground() {
+      try {
+        const canvas = document.getElementById('bg-3d');
+        if (!canvas || typeof THREE === 'undefined') return;
+
+        bgScene = new THREE.Scene();
+        bgScene.fog = new THREE.FogExp2(0xf0f4f8, 0.015);
+        bgCamera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000);
+        bgCamera.position.z = 30;
+
+        bgRenderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true, powerPreference: 'high-performance' });
+        bgRenderer.setSize(innerWidth, innerHeight);
+        bgRenderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2)); // Cap pixel ratio for mobile RAM
+
+        const petalCanvas = document.createElement('canvas');
+        petalCanvas.width = 64; petalCanvas.height = 64;
+        const pctx = petalCanvas.getContext('2d');
+        pctx.translate(32, 32);
+        pctx.beginPath();
+        pctx.moveTo(0, -20);
+        pctx.bezierCurveTo(15, -15, 15, 15, 0, 20);
+        pctx.bezierCurveTo(-15, 15, -15, -15, 0, -20);
+        pctx.fillStyle = 'rgba(0, 102, 204, 0.8)';
+        pctx.fill();
+
+        const petalTexture = new THREE.CanvasTexture(petalCanvas);
+        const petalMaterial = new THREE.MeshBasicMaterial({ map: petalTexture, transparent: true, side: THREE.DoubleSide, depthWrite: false });
+
+        const petalCount = isMobile ? 40 : 200; // Drastically reduce petals on mobile
+        for (let i = 0; i < petalCount; i++) {
+          const size = Math.max(0.3, Math.random() * 1.5 + 0.5);
+          const geometry = new THREE.PlaneGeometry(size, size);
+          const petal = new THREE.Mesh(geometry, petalMaterial);
+          petal.position.set((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 60);
+          petal.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+          petal.userData = { speed: Math.random() * 0.05 + 0.02, rotSpeed: (Math.random() - 0.5) * 0.02, sway: Math.random() * Math.PI * 2, baseX: petal.position.x };
+          bgScene.add(petal);
+          petals3D.push(petal);
+        }
+
+        addEventListener('resize', () => {
+          bgCamera.aspect = innerWidth / innerHeight;
+          bgCamera.updateProjectionMatrix();
+          bgRenderer.setSize(innerWidth, innerHeight);
+        });
+
+        animate3D();
+      } catch (err) {
+        console.error("3D Background crashed safely. Site still works:", err);
+      }
+    }
+
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+      if(!bgRenderer) return;
+      const t = performance.now() * 0.001;
+      petals3D.forEach(petal => {
+        petal.position.y -= petal.userData.speed;
+        petal.position.x = petal.userData.baseX + Math.sin(t + petal.userData.sway) * 2;
+        petal.rotation.z += petal.userData.rotSpeed;
+        petal.rotation.x += petal.userData.rotSpeed * 0.5;
+        if (petal.position.y < -40) {
+          petal.position.y = 40;
+          petal.position.x = (Math.random() - 0.5) * 80;
+          petal.userData.baseX = petal.position.x;
+        }
+      });
+      bgCamera.position.x += (mouseX3D * 5 - bgCamera.position.x) * 0.03;
+      bgCamera.position.y += (-mouseY3D * 5 - bgCamera.position.y) * 0.03;
+      bgCamera.lookAt(bgScene.position);
+      bgRenderer.render(bgScene, bgCamera);
+    }
+
+    addEventListener('mousemove', e => { mouseX3D = (e.clientX / innerWidth - 0.5); mouseY3D = (e.clientY / innerHeight - 0.5); });
+    init3DBackground();
+
+    // Disable gesture petals on touch devices to save CPU
+    if (!isMobile) {
+      function spawnGesturePetal(x, y) {
+        const petal = document.createElement('div');
+        petal.className = 'gesture-petal';
+        petal.style.left = x + 'px';
+        petal.style.top = y + 'px';
+        const rot = Math.random() * 360;
+        petal.style.transform = `rotate(${rot}deg)`;
+        document.body.appendChild(petal);
+        setTimeout(() => {
+          petal.style.transition = 'all 1.5s ease-out';
+          petal.style.transform = `translateY(80px) translateX(20px) rotate(${rot+180}deg) scale(0.5)`;
+          petal.style.opacity = '0';
+        }, 50);
+        setTimeout(() => petal.remove(), 1500);
+      }
+      addEventListener('mousemove', e => { if(Math.random() > 0.8) spawnGesturePetal(e.clientX, e.clientY); });
+    }
+
+    // Music Player
+    const fileInput = document.getElementById('mpFileInput'), uploadBtn = document.getElementById('mpUploadBtn'), playBtn = document.getElementById('mpPlayBtn'), titleEl = document.getElementById('mpTitle');
+    let audio = new Audio();
+    let isPlaying = false;
+    const savedSong = safeStorage.get('lovers_song_data'), savedName = safeStorage.get('lovers_song_name');
+    if (savedSong) { audio.src = savedSong; titleEl.innerText = savedName || "our song"; }
+
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const fileURL = ev.target.result;
+        safeStorage.set('lovers_song_data', fileURL);
+        safeStorage.set('lovers_song_name', file.name.replace(/\.[^/.]+$/, ""));
+        audio.src = fileURL;
+        titleEl.innerText = file.name.replace(/\.[^/.]+$/, "");
+        audio.play().then(() => { isPlaying = true; playBtn.classList.add('is-playing'); }).catch(err => console.warn("Play blocked:", err));
+      };
+      reader.readAsDataURL(file);
+    });
+
+    playBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        audio.pause();
+        playBtn.classList.remove('is-playing');
+        isPlaying = false;
+      } else {
+        if (!audio.src) { fileInput.click(); return; }
+        audio.play().then(() => { playBtn.classList.add('is-playing'); isPlaying = true; }).catch(err => console.warn("Play failed:", err));
+      }
+    });
+  </script>
+</body>
+</html>

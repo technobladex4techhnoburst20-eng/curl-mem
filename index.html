@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, viewport-fit=cover">
+  <title>College Memories</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;700&family=Noto+Sans+Kannada:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    :root {
+      --bg: #f0f4f8;
+      --bg-warm: #e3eaf3;
+      --text: #1a2a40;
+      --text-soft: #4a5e7a;
+      --text-mute: #7a8fa8;
+      --sage: #8a9a7b;
+      --sage-deep: #6b7a5e;
+      --blue: #0056b3;
+      --blue-deep: #003d80;
+      --sand: #e8dfd2;
+      --line: rgba(26, 42, 64, 0.14);
+      --line-soft: rgba(26, 42, 64, 0.06);
+      --ease-quiet: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; margin: 0; padding: 0; touch-action: pan-y; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 300; line-height: 1.7; }
+
+    /* Custom Background Layer */
+    #custom-bg-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-size: cover; background-position: center; background-repeat: no-repeat; }
+
+    #bg-3d { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    .grid-bg { position: fixed; inset: 0; z-index: 1; pointer-events: none; background-image: linear-gradient(rgba(0,86,179,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,86,179,0.03) 1px, transparent 1px); background-size: 40px 40px; }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; background: rgba(240, 244, 248, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--line-soft); }
+    .nav__logo { display: flex; align-items: baseline; gap: 0.6rem; text-decoration: none; color: var(--text); }
+    .logo-mark { font-size: 1.4rem; }
+    .logo-text { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 500; color: var(--blue-deep); }
+    .nav__links { display: flex; list-style: none; gap: 2rem; }
+    .nav__links a { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-soft); text-decoration: none; transition: color 300ms; display: flex; flex-direction: column; align-items: center; }
+    .nav__links a span.kn { font-family: 'Noto Sans Kannada', sans-serif; font-size: 10px; text-transform: none; letter-spacing: 0; margin-top: 2px; opacity: 0.7; }
+    .nav__links a:hover, .nav__links a.active { color: var(--blue-deep); }
+
+    /* Top Left Background Uploader */
+    .bg-uploader-widget { position: fixed; top: 6rem; left: 1.5rem; z-index: 99; }
+    .bg-uploader-widget button { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid var(--line); color: var(--blue-deep); padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.3s ease; font-family: 'Inter', sans-serif; }
+    .bg-uploader-widget button:hover { background: var(--blue-deep); color: #fff; border-color: var(--blue-deep); }
+
+    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 8rem 1.5rem; position: relative; z-index: 2; }
+    .hero__bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(180deg, rgba(240,244,248,0.6) 0%, rgba(240,244,248,0.8) 100%); }
+    .hero__content { position: relative; z-index: 3; max-width: 760px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .college-badge { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1rem; color: var(--blue-deep); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.5rem; display: inline-block; border: 1px solid var(--blue); padding: 0.6rem 1.5rem; border-radius: 50px; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(4px); }
+    .college-image { width: 100%; max-width: 600px; height: auto; border-radius: 12px; border: 4px solid var(--blue); box-shadow: 0 15px 40px -10px rgba(26, 42, 64, 0.4); margin-bottom: 2rem; display: block; }
+    .hero__title { font-family: 'Cormorant Garamond', serif; font-size: clamp(3rem, 9vw, 6rem); font-weight: 500; line-height: 0.95; margin-bottom: 0.5rem; color: var(--text); }
+    .hero__title-kn { font-family: 'Noto Sans Kannada', sans-serif; font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 400; color: var(--text-soft); margin-bottom: 1.5rem; display: block; }
+
+    .batch-text { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--blue-deep); letter-spacing: 0.05em; margin-bottom: 1rem; display: inline-block; border-bottom: 2px solid var(--blue); padding-bottom: 0.5rem; }
+    .batch-text-kn { font-family: 'Noto Sans Kannada', sans-serif; font-weight: 700; font-size: 1rem; color: var(--blue-deep); margin-bottom: 2.5rem; display: block; }
+
+    .hero__sub { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.1rem, 2vw, 1.4rem); font-style: italic; color: var(--text-soft); margin-bottom: 0.5rem; line-height: 1.6; }
+    .hero__sub-kn { font-family: 'Noto Sans Kannada', sans-serif; font-size: 1rem; color: var(--text-soft); margin-bottom: 3rem; line-height: 1.6; }
+    .cta { display: inline-flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 1.1rem 2.4rem; background: var(--blue-deep); color: #fdf6ec; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 500; border-radius: 999px; transition: background 400ms, transform 400ms; }
+    .cta:hover { background: var(--blue); transform: translateY(-2px); }
+
+    /* Countdown Timer Section */
+    .countdown-section { padding: 4rem 2rem; position: relative; z-index: 2; text-align: center; }
+    .countdown-container { max-width: 780px; margin: 0 auto; background: rgba(240, 244, 248, 0.8); padding: 3rem; border-radius: 12px; backdrop-filter: blur(8px); border: 1px solid var(--line-soft); }
+    .countdown-eyebrow { display: block; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: var(--blue-deep); margin-bottom: 1rem; }
+    .countdown-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 4vw, 2.5rem); color: var(--text); margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .countdown-edit-btn { background: rgba(255,255,255,0.5); border: 1px solid var(--line); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; opacity: 0.5; transition: opacity 0.3s; }
+    .countdown-edit-btn:hover { opacity: 1; background: var(--blue-deep); color: #fff; }
+    .countdown-timer { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    .time-box { background: var(--blue-deep); color: #fff; padding: 1.5rem 1rem; border-radius: 12px; min-width: 80px; box-shadow: 0 8px 20px -8px rgba(0,0,0,0.2); }
+    .time-box span { display: block; font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; font-weight: 700; line-height: 1; }
+    .time-box small { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.8; margin-top: 0.5rem; display: block; }
+
+    .manifesto-section { padding: 10rem 2rem; position: relative; z-index: 2; text-align: center; }
+    .manifesto { max-width: 780px; margin: 0 auto; background: rgba(240, 244, 248, 0.8); padding: 3rem; border-radius: 12px; backdrop-filter: blur(8px); }
+    .eyebrow { display: inline-block; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: var(--blue-deep); margin-bottom: 1rem; }
+    .eyebrow-kn { display: block; font-family: 'Noto Sans Kannada', sans-serif; font-size: 0.9rem; letter-spacing: 0; text-transform: none; color: var(--blue-deep); margin-bottom: 2rem; }
+    .manifesto__text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem, 3.2vw, 2.4rem); line-height: 1.45; color: var(--text); margin-bottom: 1rem; }
+    .manifesto__text-kn { font-family: 'Noto Sans Kannada', sans-serif; font-size: 1.2rem; line-height: 1.6; color: var(--text-soft); }
+
+    .nav-grid { max-width: 1100px; margin: 4rem auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 2rem; padding: 0 1rem 4rem; position: relative; z-index: 2; }
+    .nav-grid a { text-decoration: none; color: inherit; text-align: center; position: relative; display: block; }
+    .nav-grid img { max-width: 100%; height: auto; border-radius: 8px; aspect-ratio: 4/5; object-fit: cover; margin-bottom: 1rem; transition: filter 300ms; }
+    .nav-grid a:hover img { filter: brightness(1.05); }
+    .nav-grid h3 { font-size: 1.8rem; font-weight: 500; margin-top:1rem; }
+    .nav-grid h3-kn { font-family: 'Noto Sans Kannada', sans-serif; font-size: 1.2rem; font-weight: 400; color: var(--text); display: block; margin-top: 0.3rem; }
+    .nav-grid p { color: var(--text-mute); }
+
+    /* Grid Image Edit Button */
+    .grid-img-edit-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); backdrop-filter: blur(4px); border: 1px solid var(--line); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; z-index: 10; }
+    .nav-grid a:hover .grid-img-edit-btn { opacity: 1; }
+
+    .gesture-petal { position: fixed; width: 14px; height: 14px; background: #0056b3; border-radius: 0 100% 0 100%; pointer-events: none; z-index: 9999; opacity: 0.7; }
+
+    .mp-player { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9998; display: flex; align-items: center; gap: 0.9rem; padding: 0.6rem 1.1rem 0.6rem 0.6rem; background: rgba(240, 244, 248, 0.95); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 12px 30px -10px rgba(26,42,64,0.3); }
+    .mp-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--blue-deep); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 300ms; flex-shrink: 0; }
+    .mp-btn:hover { background: var(--blue); }
+    .mp-btn.is-playing { background: var(--sage-deep); }
+    .mp-icon { width: 16px; height: 16px; }
+    .mp-btn.is-playing .mp-icon-play { display: none; }
+    .mp-btn:not(.is-playing) .mp-icon-pause { display: none; }
+    .mp-info { display: flex; flex-direction: column; line-height: 1.2; max-width: 120px; overflow: hidden; }
+    .mp-title { font-family: 'Cormorant Garamond', serif; font-size: 0.92rem; color: var(--text); font-style: italic; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .mp-upload-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; opacity: 0.6; transition: opacity 300ms; padding: 0; display: flex; align-items: center; }
+
+    .footer { background: var(--text); color: var(--bg); padding: 5rem 2rem 3rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem; max-width: 1280px; margin: 0 auto; position: relative; z-index: 2; }
+    .footer__col h4 { font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 1rem; }
+    .footer__col a { color: var(--bg); text-decoration: none; opacity: 0.8; display: block; margin-bottom: 0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; }
+
+    @media (max-width: 768px) { .nav { padding: 1rem 1.2rem; } .nav__links { display: none; } .grid-img-edit-btn { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <div id="custom-bg-layer"></div>
+  <canvas id="bg-3d"></canvas>
+  <div class="grid-bg"></div>
+
+  <div class="bg-uploader-widget">
+    <input type="file" id="customBgInput" accept="image/*" hidden>
+    <button onclick="document.getElementById('customBgInput').click()" title="Change Background">🖼️ <span>Change Background</span></button>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html" class="nav__logo">
+      <span class="logo-mark">🎓</span>
+      <span class="logo-text">College Memories</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="index.html" class="active">Home<span class="kn">ಮುಖಪುಟ</span></a></li>
+      <li><a href="letters.html">Campus Notes<span class="kn">ಕ್ಯಾಂಪಸ್ ಟಿಪ್ಪಣಿಗಳು</span></a></li>
+      <li><a href="sky.html">Night Chats<span class="kn">ರಾತ್ರಿ ಚಾಟ್</span></a></li>
+      <li><a href="garden.html">The Yearbook<span class="kn">ಸ್ಮರಣಿಕೆ</span></a></li>
+    </ul>
+  </nav>
+
+  <section class="hero" id="hero">
+    <div class="hero__bg"></div>
+    <div class="hero__content">
+      <div class="college-badge">Government Polytechnic Hubli 580021</div>
+      <img src="https://z-cdn-media.chatglm.cn/files/96656f99-10b8-4671-8fa3-84c56b7150e5.jpeg?auth_key=1888841563-867ca066d6664aa291516a21c20ca48d-0-b37c1a8aac90365c64fd20930776682e" alt="Government Polytechnic Hubli" class="college-image">
+      <h1 class="hero__title">College Memories</h1>
+      <span class="hero__title-kn">ಕಾಲೇಜಿನ ನೆನಪುಗಳು</span>
+
+      <!-- UPDATED BATCH TEXT HERE -->
+      <div class="batch-text">{BATCH NO(24-25)} All Branches</div>
+      <div class="batch-text-kn">{ಬ್ಯಾಚ್ ಸಂಖ್ಯೆ(24-25)} ಎಲ್ಲಾ ವಿಭಾಗಗಳು</div>
+
+      <p class="hero__sub">Where every corner holds a story, and every face is a friend. Let's relive the best years of our lives.</p>
+      <p class="hero__sub-kn">ಪ್ರತಿ ಮೂಲೆಯಲ್ಲೂ ಒಂದು ಕಥೆ ಅಡಗಿದೆ, ಮತ್ತು ಪ್ರತಿ ಮುಖವು ಸ್ನೇಹಿತನಾಗಿದೆ. ನಮ್ಮ ಜೀವನದ ಅತ್ಯುತ್ತಮ ವರ್ಷಗಳನ್ನು ಮತ್ತೆ ಕಾಣೋಣ.</p>
+      <a href="garden.html" class="cta"><span>Open the Yearbook · ಸ್ಮರಣಿಕೆ ತೆರೆಯಿರಿ</span></a>
+    </div>
+  </section>
+
+  <!-- NEW: Graduation Countdown Section with Local Storage Settings -->
+  <section class="countdown-section">
+    <div class="countdown-container">
+      <span class="countdown-eyebrow">Graduation Countdown · ಪದವಿ ಸಮಾರಂಭ</span>
+      <h2 class="countdown-title">
+        Class of <span id="gradMonthYear">May 2027</span>
+        <button class="countdown-edit-btn" onclick="setGraduationDate()" title="Edit Date">⚙️</button>
+      </h2>
+      <div class="countdown-timer" id="countdownTimer">
+        <div class="time-box"><span id="days">00</span><small>Days</small></div>
+        <div class="time-box"><span id="hours">00</span><small>Hours</small></div>
+        <div class="time-box"><span id="minutes">00</span><small>Mins</small></div>
+        <div class="time-box"><span id="seconds">00</span><small>Secs</small></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="manifesto-section" data-observe>
+    <div class="manifesto">
+      <span class="eyebrow">Our Vow</span>
+      <span class="eyebrow-kn">ನಮ್ಮ ಪ್ರತಿಜ್ಞೆ</span>
+      <p class="manifesto__text">We do not measure the years by the exams we took, but by the late-night laughter, the shared struggles, and the friendships that will last a lifetime.</p>
+      <p class="manifesto__text-kn">ನಾವು ವರ್ಷಗಳನ್ನು ನಾವು ತೆಗೆದುಕೊಂಡ ಪರೀಕ್ಷೆಗಳಿಂದ ಅಲ್ಲ, ಬದಲಾಗಿ ಅರ್ಧರಾತ್ರಿಯ ನಗು, ಹಂಚಿಕೊಂಡ ಹೋರಾಟ ಮತ್ತು ಜೀವಮಾನದುದ್ದಕ್ಕೂ ಇರುವ ಸ್ನೇಹದಿಂದ ಅಳೆಯುತ್ತೇವೆ.</p>
+    </div>
+  </section>
+
+  <div class="nav-grid">
+    <a href="letters.html">
+      <img src="https://images.unsplash.com/photo-1456514115073-6f9c66f52c70?q=80&w=800&h=1000&auto=format&fit=crop" data-img-id="grid-letters" alt="Aesthetic Notebook in Grassland">
+      <button class="grid-img-edit-btn" onclick="event.preventDefault(); event.stopPropagation(); changeGridImage('grid-letters')">🖼️</button>
+      <h3>Campus Notes</h3>
+      <span class="h3-kn">ಕ್ಯಾಂಪಸ್ ಟಿಪ್ಪಣಿಗಳು</span>
+      <p>Words we shared<br><span style="font-family: 'Noto Sans Kannada', sans-serif; font-size: 0.9rem;">ನಾವು ಹಂಚಿಕೊಂಡ ಪದಗಳು</span></p>
+    </a>
+    <a href="sky.html">
+      <img src="https://images.unsplash.com/photo-1488972685288-c74f57b6b4a1?q=80&w=800&h=1000&auto=format&fit=crop" data-img-id="grid-sky" alt="Starry Night Sky Aesthetic">
+      <button class="grid-img-edit-btn" onclick="event.preventDefault(); event.stopPropagation(); changeGridImage('grid-sky')">🖼️</button>
+      <h3>Night Chats</h3>
+      <span class="h3-kn">ರಾತ್ರಿ ಚಾಟ್</span>
+      <p>Messages from the batch<br><span style="font-family: 'Noto Sans Kannada', sans-serif; font-size: 0.9rem;">ಬ್ಯಾಚ್‌ನಿಂದ ಸಂದೇಶಗಳು</span></p>
+    </a>
+    <a href="garden.html">
+      <img src="https://images.unsplash.com/photo-1601513418200-30f7f7c25c88?q=80&w=800&h=1000&auto=format&fit=crop" data-img-id="grid-garden" alt="Friends Laughing and Having Fun">
+      <button class="grid-img-edit-btn" onclick="event.preventDefault(); event.stopPropagation(); changeGridImage('grid-garden')">🖼️</button>
+      <h3>The Yearbook</h3>
+      <span class="h3-kn">ಸ್ಮರಣಿಕೆ</span>
+      <p>Our captured moments<br><span style="font-family: 'Noto Sans Kannada', sans-serif; font-size: 0.9rem;">ನಮ್ಮ ಸೆರೆಹಿಡಿದ ಕ್ಷಣಗಳು</span></p>
+    </a>
+  </div>
+
+  <footer class="footer">
+    <div class="footer__col">
+      <h4>College Memories</h4>
+      <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; opacity: 0.8;">A digital time capsule for our batch. 🤍<br><span style="font-family: 'Noto Sans Kannada', sans-serif; font-size: 0.9rem;">ನಮ್ಮ ಬ್ಯಾಚ್‌ಗಾಗಿ ಡಿಜಿಟಲ್ ಟೈಮ್ ಕ್ಯಾಪ್ಸೂಲ್.</span></p>
+    </div>
+    <div class="footer__col">
+      <h4>Navigate</h4>
+      <a href="index.html">Home</a>
+      <a href="letters.html">Notes</a>
+      <a href="sky.html">Chats</a>
+      <a href="garden.html">Yearbook</a>
+    </div>
+    <div class="footer__col">
+      <h4>Admin</h4>
+      <a href="admin.html">🔐 Admin Panel</a>
+    </div>
+  </footer>
+
+  <div class="mp-player">
+    <input type="file" id="mpFileInput" accept="audio/*" hidden>
+    <button class="mp-btn" id="mpPlayBtn" aria-label="play music">
+      <svg class="mp-icon mp-icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="mp-icon mp-icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+    </button>
+    <div class="mp-info"><span class="mp-title" id="mpTitle">our song</span></div>
+    <button class="mp-upload-btn" id="mpUploadBtn" title="Upload your music">🎵</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Force HTTPS Security
+    if (location.protocol !== 'https:' && location.hostname !== '' && location.hostname !== 'localhost' && !location.hostname.startsWith('127.')) {
+      location.replace(`https://${location.hostname}${location.pathname}${location.search}`);
+    }
+
+    // Safe storage wrapper to prevent crashes on 1GB RAM phones
+    const safeStorage = {
+      get: (k) => { try { return localStorage.getItem(k); } catch(e) { return null; } },
+      set: (k, v) => { try { localStorage.setItem(k, v); } catch(e) { console.warn("Storage full"); } },
+      remove: (k) => { try { localStorage.removeItem(k); } catch(e) {} }
+    };
+
+    // Custom Background Upload Logic
+    const customBgLayer = document.getElementById('custom-bg-layer'), customBgInput = document.getElementById('customBgInput');
+    const savedBg = safeStorage.get('college_custom_bg');
+    if (savedBg) { customBgLayer.style.backgroundImage = `url(${savedBg})`; }
+    customBgInput.addEventListener('change', (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { const url = ev.target.result; safeStorage.set('college_custom_bg', url); customBgLayer.style.backgroundImage = `url(${url})`; }; reader.readAsDataURL(file); });
+
+    // Custom Grid Image Uploader
+    function changeGridImage(id) {
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = 'image/*';
+      input.onchange = ev => {
+        const file = ev.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = readerEv => {
+          const dataUrl = readerEv.target.result;
+          safeStorage.set('custom-img-' + id, dataUrl);
+          const imgEl = document.querySelector(`img[data-img-id="${id}"]`);
+          if (imgEl) imgEl.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    }
+
+    // Load saved grid images on startup
+    ['grid-letters', 'grid-sky', 'grid-garden'].forEach(id => {
+      const saved = safeStorage.get('custom-img-' + id);
+      if (saved) {
+        const imgEl = document.querySelector(`img[data-img-id="${id}"]`);
+        if (imgEl) imgEl.src = saved;
+      }
+    });
+
+    // --- Graduation Countdown Logic with Local Storage ---
+    // Checks local storage for a saved date, defaults to May 31, 2027 if not found
+    let countdownDateStr = safeStorage.get('college_grad_date') || "May 31, 2027 10:00:00";
+    let countdownDate = new Date(countdownDateStr).getTime();
+
+    function updateCountdownText() {
+      const dateObj = new Date(countdownDateStr);
+      const month = dateObj.toLocaleString('default', { month: 'long' });
+      const year = dateObj.getFullYear();
+      const gradTextEl = document.getElementById('gradMonthYear');
+      if (gradTextEl) gradTextEl.innerText = `${month} ${year}`;
+    }
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = countdownDate - now;
+
+      if (distance < 0) {
+        document.getElementById('countdownTimer').innerHTML = "<p style='font-size: 1.5rem; color: var(--blue-deep); font-family: \"Cormorant Garamond\", serif;'>We've Graduated! 🎓</p>";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById('days').innerText = days < 10 ? '0' + days : days;
+      document.getElementById('hours').innerText = hours < 10 ? '0' + hours : hours;
+      document.getElementById('minutes').innerText = minutes < 10 ? '0' + minutes : minutes;
+      document.getElementById('seconds').innerText = seconds < 10 ? '0' + seconds : seconds;
+    }
+
+    function setGraduationDate() {
+      // Format the current date to YYYY-MM-DD for the prompt input
+      const currentDate = new Date(countdownDateStr).toISOString().split('T')[0];
+      const inputDate = prompt("Enter your graduation date (YYYY-MM-DD):", currentDate);
+
+      if (inputDate) {
+        const newDate = new Date(inputDate + "T10:00:00");
+        if (!isNaN(newDate.getTime())) {
+          const newDateStr = newDate.toString();
+          // Save to Local Storage!
+          safeStorage.set('college_grad_date', newDateStr);
+          countdownDateStr = newDateStr;
+          countdownDate = newDate.getTime();
+          updateCountdownText();
+
+          // Restore the timer boxes if it was previously graduated
+          document.getElementById('countdownTimer').innerHTML = `
+            <div class="time-box"><span id="days">00</span><small>Days</small></div>
+            <div class="time-box"><span id="hours">00</span><small>Hours</small></div>
+            <div class="time-box"><span id="minutes">00</span><small>Mins</small></div>
+            <div class="time-box"><span id="seconds">00</span><small>Secs</small></div>
+          `;
+          updateCountdown();
+          alert("Graduation date updated and saved in local storage!");
+        } else {
+          alert("Invalid date format. Please use YYYY-MM-DD.");
+        }
+      }
+    }
+
+    updateCountdownText();
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // 3D Background Optimized for Mobile
+    let bgScene, bgCamera, bgRenderer, petals3D = []; let mouseX3D = 0, mouseY3D = 0; const isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    function init3DBackground() {
+      try {
+        const canvas = document.getElementById('bg-3d'); if (!canvas || typeof THREE === 'undefined') return;
+        bgScene = new THREE.Scene(); bgScene.fog = new THREE.FogExp2(0xf0f4f8, 0.015);
+        bgCamera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 1000); bgCamera.position.z = 30;
+        bgRenderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true, powerPreference: 'high-performance' });
+        bgRenderer.setSize(innerWidth, innerHeight); bgRenderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
+        const petalCanvas = document.createElement('canvas'); petalCanvas.width = 64; petalCanvas.height = 64;
+        const pctx = petalCanvas.getContext('2d'); pctx.translate(32, 32); pctx.beginPath(); pctx.moveTo(0, -20);
+        pctx.bezierCurveTo(15, -15, 15, 15, 0, 20); pctx.bezierCurveTo(-15, 15, -15, -15, 0, -20);
+        pctx.fillStyle = 'rgba(0, 102, 204, 0.8)'; pctx.fill(); const petalTexture = new THREE.CanvasTexture(petalCanvas);
+        const petalMaterial = new THREE.MeshBasicMaterial({ map: petalTexture, transparent: true, side: THREE.DoubleSide, depthWrite: false });
+        const petalCount = isMobile ? 40 : 200;
+        for (let i = 0; i < petalCount; i++) {
+          const size = Math.max(0.3, Math.random() * 1.5 + 0.5); const geometry = new THREE.PlaneGeometry(size, size);
+          const petal = new THREE.Mesh(geometry, petalMaterial);
+          petal.position.set((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 60);
+          petal.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+          petal.userData = { speed: Math.random() * 0.05 + 0.02, rotSpeed: (Math.random() - 0.5) * 0.02, sway: Math.random() * Math.PI * 2, baseX: petal.position.x };
+          bgScene.add(petal); petals3D.push(petal);
+        }
+        addEventListener('resize', () => { bgCamera.aspect = innerWidth / innerHeight; bgCamera.updateProjectionMatrix(); bgRenderer.setSize(innerWidth, innerHeight); });
+        animate3D();
+      } catch (err) { console.error("3D Background crashed safely. Site still works:", err); }
+    }
+    function animate3D() {
+      requestAnimationFrame(animate3D); if(!bgRenderer) return;
+      const t = performance.now() * 0.001;
+      petals3D.forEach(petal => {
+        petal.position.y -= petal.userData.speed; petal.position.x = petal.userData.baseX + Math.sin(t + petal.userData.sway) * 2;
+        petal.rotation.z += petal.userData.rotSpeed; petal.rotation.x += petal.userData.rotSpeed * 0.5;
+        if (petal.position.y < -40) { petal.position.y = 40; petal.position.x = (Math.random() - 0.5) * 80; petal.userData.baseX = petal.position.x; }
+      });
+      bgCamera.position.x += (mouseX3D * 5 - bgCamera.position.x) * 0.03; bgCamera.position.y += (-mouseY3D * 5 - bgCamera.position.y) * 0.03;
+      bgCamera.lookAt(bgScene.position); bgRenderer.render(bgScene, bgCamera);
+    }
+    addEventListener('mousemove', e => { mouseX3D = (e.clientX / innerWidth - 0.5); mouseY3D = (e.clientY / innerHeight - 0.5); });
+    init3DBackground();
+    if (!isMobile) {
+      function spawnGesturePetal(x, y) {
+        const petal = document.createElement('div'); petal.className = 'gesture-petal'; petal.style.left = x + 'px'; petal.style.top = y + 'px';
+        const rot = Math.random() * 360; petal.style.transform = `rotate(${rot}deg)`; document.body.appendChild(petal);
+        setTimeout(() => { petal.style.transition = 'all 1.5s ease-out'; petal.style.transform = `translateY(80px) translateX(20px) rotate(${rot+180}deg) scale(0.5)`; petal.style.opacity = '0'; }, 50);
+        setTimeout(() => petal.remove(), 1500);
+      }
+      addEventListener('mousemove', e => { if(Math.random() > 0.8) spawnGesturePetal(e.clientX, e.clientY); });
+    }
+
+    // Music Player
+    const fileInput = document.getElementById('mpFileInput'), uploadBtn = document.getElementById('mpUploadBtn'), playBtn = document.getElementById('mpPlayBtn'), titleEl = document.getElementById('mpTitle');
+    let audio = new Audio(); let isPlaying = false;
+    const savedSong = safeStorage.get('lovers_song_data'), savedName = safeStorage.get('lovers_song_name');
+    if (savedSong) { audio.src = savedSong; titleEl.innerText = savedName || "our song"; }
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { const fileURL = ev.target.result; safeStorage.set('lovers_song_data', fileURL); safeStorage.set('lovers_song_name', file.name.replace(/\.[^/.]+$/, "")); audio.src = fileURL; titleEl.innerText = file.name.replace(/\.[^/.]+$/, ""); audio.play().then(() => { isPlaying = true; playBtn.classList.add('is-playing'); }).catch(err => console.warn("Play blocked:", err)); }; reader.readAsDataURL(file); });
+    playBtn.addEventListener('click', () => { if (isPlaying) { audio.pause(); playBtn.classList.remove('is-playing'); isPlaying = false; } else { if (!audio.src) { fileInput.click(); return; } audio.play().then(() => { playBtn.classList.add('is-playing'); isPlaying = true; }).catch(err => console.warn("Play failed:", err)); } });
+  </script>
+</body>
+</html>
