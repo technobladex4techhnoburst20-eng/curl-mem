@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, viewport-fit=cover">
   <title>College Memories</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#003d80">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;700&family=Noto+Sans+Kannada:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
   <style>
     :root {
@@ -406,6 +408,13 @@
     uploadBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { const fileURL = ev.target.result; safeStorage.set('lovers_song_data', fileURL); safeStorage.set('lovers_song_name', file.name.replace(/\.[^/.]+$/, "")); audio.src = fileURL; titleEl.innerText = file.name.replace(/\.[^/.]+$/, ""); audio.play().then(() => { isPlaying = true; playBtn.classList.add('is-playing'); }).catch(err => console.warn("Play blocked:", err)); }; reader.readAsDataURL(file); });
     playBtn.addEventListener('click', () => { if (isPlaying) { audio.pause(); playBtn.classList.remove('is-playing'); isPlaying = false; } else { if (!audio.src) { fileInput.click(); return; } audio.play().then(() => { playBtn.classList.add('is-playing'); isPlaying = true; }).catch(err => console.warn("Play failed:", err)); } });
+  </script>
+  
+  <!-- PWA Service Worker Activation Script -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').then(() => console.log('App Mode Activated!'));
+    }
   </script>
 </body>
 </html>
