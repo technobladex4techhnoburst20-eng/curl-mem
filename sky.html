@@ -172,9 +172,13 @@
     .footer__col h4 { font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--neon-blue); margin-bottom: 1rem; }
     .footer__col a { color: var(--bg); text-decoration: none; opacity: 0.8; display: block; margin-bottom: 0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; }
 
+    /* Portrait Mobile Adjustments */
     @media (max-width: 768px) {
       .nav { padding: 1rem 1.2rem; }
       .nav__links { display: none; }
+      .chat-view { height: calc(100vh - 220px); } /* Dynamic height for portrait */
+      .auth-container { padding: 2rem 1.5rem; }
+      .reel-card video { max-height: 400px; }
     }
   </style>
 </head>
@@ -237,6 +241,13 @@
         </select>
         <button class="auth-btn" onclick="register()">Create Account · ಖಾತೆ ರಚಿಸಿ</button>
       </div>
+      <div class="auth-form" id="twofaForm" style="display: none;">
+        <h3 style="color: var(--neon-blue); font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">2FA Verification</h3>
+        <p style="font-size: 0.85rem; color: var(--text-mute); margin-bottom: 1rem; text-align: center;">Enter the 6-digit code generated to verify your identity.</p>
+        <input type="text" id="2faInput" placeholder="Enter 6-digit code" maxlength="6" style="text-align: center; letter-spacing: 0.5rem; font-size: 1.5rem;">
+        <button class="auth-btn" onclick="verify2FA()">Verify & Login</button>
+        <button class="auth-btn" style="background: none; color: var(--text-mute); border: 1px solid var(--line); margin-top: 0.5rem;" onclick="cancel2FA()">Cancel</button>
+      </div>
     </div>
 
     <div class="chat-app" id="chatApp" style="display: none;">
@@ -248,6 +259,7 @@
         <div class="user-info">
           <span id="currentUserName" style="color: var(--text-main); font-weight: 500;"></span>
           <span class="user-uid" id="currentUserUid"></span>
+          <button class="logout-btn" onclick="reportProblem()" style="border-color: #ffc107; color: #ffc107;">⚠️ Report Problem</button>
           <button class="logout-btn" onclick="logout()">Logout · ಲಾಗ್ ಔಟ್</button>
         </div>
       </div>
@@ -347,9 +359,15 @@
 
       <div class="chat-view" id="profileView">
         <div class="profile-container">
-          <div class="profile-avatar" id="profileAvatar"></div>
+          <div style="position: relative; display: inline-block; margin-bottom: 1rem;">
+            <div class="profile-avatar" id="profileAvatar"></div>
+            <button id="editAvatarBtn" onclick="editProfileImage()" style="position: absolute; bottom: 0; right: 0; background: var(--neon-blue); color: #fff; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 14px;">📷</button>
+            <input type="file" id="profileImgInput" accept="image/*" hidden>
+          </div>
           <h2 id="profileName" style="font-family: 'Cormorant Garamond', serif; color: var(--text-main);"></h2>
           <p id="profileUid" style="color:var(--text-mute); font-family:'JetBrains Mono', monospace; margin-top:0.5rem;"></p>
+          <div id="profileBio" style="color: var(--text-soft); margin: 1rem auto; max-width: 400px; font-style: italic;"></div>
+          <button class="profile-toggle" onclick="editBio()">✏️ Edit Bio</button>
           <button class="profile-toggle" id="privacyToggle" onclick="togglePrivacy()">Toggle Privacy</button>
         </div>
       </div>
@@ -560,6 +578,7 @@
       document.getElementById(tab + 'Tab').classList.add('active');
       document.getElementById('loginForm').style.display = tab === 'login' ? 'flex' : 'none';
       document.getElementById('registerForm').style.display = tab === 'register' ? 'flex' : 'none';
+      document.getElementById('twofaForm').style.display = 'none'; // Safe hide
     }
 
     function register() {
@@ -577,7 +596,7 @@
       if (users.find(user => user.username.toLowerCase() === u.toLowerCase())) { alert("Username already taken! Please choose another."); return; }
 
       const uid = genUid();
-      users.push({ uid, username: u, password: p, name, phone, branch, location: loc, dob: dob, status: 'active', avatar: tempAvatarData, pronouns, isPrivate: false });
+      users.push({ uid, username: u, password: p, name, phone, branch, location: loc, dob: dob, status: 'active', avatar: tempAvatarData, pronouns, isPrivate: false, bio: '' });
       safeStorage.set('college_users', JSON.stringify(users));
       safeStorage.set('current_user', uid);
       currentUser = uid;
@@ -604,9 +623,44 @@
       if (!user) { alert("Invalid credentials!"); return; }
       if (user.status === 'blocked') { alert("Your account has been blocked by the admin."); return; }
       if (user.status === 'deactivated') { alert("Your account is deactivated."); return; }
-      safeStorage.set('current_user', user.uid);
-      currentUser = user.uid;
-      showChatApp();
+
+      // 2FA Activation
+      const code = Math.floor(100000 + Math.random() * 900000);
+      sessionStorage.setItem('2fa_code', code);
+      sessionStorage.setItem('2fa_user', user.uid);
+      
+      // Simulated SMS/Email alert
+      alert(`(Simulated SMS/Email) Your College Memories 2FA code is: ${code}`);
+      
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('twofaForm').style.display = 'flex';
+    }
+
+    function verify2FA() {
+      const inputCode = document.getElementById('2faInput').value.trim();
+      const savedCode = sessionStorage.getItem('2fa_code');
+      const userUid = sessionStorage.getItem('2fa_user');
+      
+      if (inputCode === savedCode) {
+        safeStorage.set('current_user', userUid);
+        currentUser = userUid;
+        sessionStorage.removeItem('2fa_code');
+        sessionStorage.removeItem('2fa_user');
+        document.getElementById('twofaForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'flex';
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
+        showChatApp();
+      } else {
+        alert("Invalid 2FA code!");
+      }
+    }
+
+    function cancel2FA() {
+      document.getElementById('twofaForm').style.display = 'none';
+      document.getElementById('loginForm').style.display = 'flex';
+      document.getElementById('loginUser').value = '';
+      document.getElementById('loginPass').value = '';
     }
 
     function logout() {
@@ -614,6 +668,18 @@
       currentUser = null;
       document.getElementById('authScreen').style.display = 'block';
       document.getElementById('chatApp').style.display = 'none';
+      document.getElementById('twofaForm').style.display = 'none';
+      document.getElementById('loginForm').style.display = 'flex';
+    }
+
+    function reportProblem() {
+      const issue = prompt("Describe the problem you are facing:");
+      if (issue && issue.trim()) {
+        let siteReports = JSON.parse(safeStorage.get('college_site_reports') || '[]');
+        siteReports.push({ reporter: currentUser, issue: issue.trim(), timestamp: Date.now() });
+        safeStorage.set('college_site_reports', JSON.stringify(siteReports));
+        alert("Thank you! Your problem has been reported to the admin.");
+      }
     }
 
     function showChatApp() {
@@ -820,6 +886,7 @@
       avatar.innerText = user.avatar ? '' : user.name.charAt(0).toUpperCase();
       document.getElementById('profileName').innerText = user.name;
       document.getElementById('profileUid').innerText = user.uid;
+      document.getElementById('profileBio').innerText = user.bio || 'No bio added yet. Click "Edit Bio" to tell us about yourself!';
       document.getElementById('privacyToggle').innerText = user.isPrivate ? "Make Account Public" : "Make Account Private";
     }
 
@@ -831,6 +898,34 @@
       alert("Account is now " + (user.isPrivate ? "Private. Only friends can see your reels." : "Public. Everyone can see your reels."));
       renderProfile();
       renderReels();
+    }
+
+    // Profile Image & Bio Edit Functions
+    function editProfileImage() { document.getElementById('profileImgInput').click(); }
+    document.getElementById('profileImgInput').addEventListener('change', e => {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const user = users.find(u => u.uid === currentUser);
+        if(!user) return;
+        user.avatar = ev.target.result;
+        safeStorage.set('college_users', JSON.stringify(users));
+        renderProfile();
+        alert("Profile image updated!");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function editBio() {
+      const user = users.find(u => u.uid === currentUser);
+      if(!user) return;
+      const newBio = prompt("Enter your bio (tell us about yourself):", user.bio || "");
+      if (newBio !== null) {
+        user.bio = newBio.trim();
+        safeStorage.set('college_users', JSON.stringify(users));
+        renderProfile();
+        alert("Bio updated!");
+      }
     }
 
     // --- Private Chat & Requests ---
@@ -1090,7 +1185,8 @@
           const liked = meta.likes.includes(currentUser);
           const likeIcon = liked ? '❤️' : '🤍';
           let commentsHTML = meta.comments.map(c => `<div class="reel-comment"><b>${c.senderName}:</b> ${c.text}</div>`).join('');
-          card.innerHTML = `<video src="${url}" controls loop preload="metadata"></video><div class="reel-info"><div style="display:flex; align-items:center; gap:0.5rem;"><div class="user-avatar" style="width:30px; height:30px; font-size:1rem; background-image:url(${uploader?.avatar || ''});">${uploader?.avatar ? '' : (uploader?.name.charAt(0) || '?')}</div><b>${uploader?.name || 'Unknown'}</b></div><div class="reel-actions"><button class="reel-action-btn" onclick="toggleLike(${reel.id})">${likeIcon} <span>${meta.likes.length}</span></button><button class="reel-action-btn" onclick="shareReel(${reel.id})">🔗 Share</button></div><div style="margin-top:0.5rem;">${commentsHTML}</div><div style="display:flex; gap:0.5rem; margin-top:0.5rem;"><input type="text" placeholder="Add comment..." id="comment-${reel.id}" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:0.5rem; color:var(--text-main);"><button onclick="addComment(${reel.id})" style="background:var(--neon-blue); border:none; color:#fff; padding:0 1rem; border-radius:4px; cursor:pointer;">Send</button></div></div>`;
+          // Added playsinline to fix audio and portrait playback on iOS/Android
+          card.innerHTML = `<video src="${url}" controls loop playsinline preload="metadata"></video><div class="reel-info"><div style="display:flex; align-items:center; gap:0.5rem;"><div class="user-avatar" style="width:30px; height:30px; font-size:1rem; background-image:url(${uploader?.avatar || ''});">${uploader?.avatar ? '' : (uploader?.name.charAt(0) || '?')}</div><b>${uploader?.name || 'Unknown'}</b></div><div class="reel-actions"><button class="reel-action-btn" onclick="toggleLike(${reel.id})">${likeIcon} <span>${meta.likes.length}</span></button><button class="reel-action-btn" onclick="shareReel(${reel.id})">🔗 Share</button></div><div style="margin-top:0.5rem;">${commentsHTML}</div><div style="display:flex; gap:0.5rem; margin-top:0.5rem;"><input type="text" placeholder="Add comment..." id="comment-${reel.id}" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:0.5rem; color:var(--text-main);"><button onclick="addComment(${reel.id})" style="background:var(--neon-blue); border:none; color:#fff; padding:0 1rem; border-radius:4px; cursor:pointer;">Send</button></div></div>`;
           grid.appendChild(card);
         });
       };
