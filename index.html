@@ -83,6 +83,13 @@
     .manifesto__text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem, 3.2vw, 2.4rem); line-height: 1.45; color: var(--text); margin-bottom: 1rem; }
     .manifesto__text-kn { font-family: 'Noto Sans Kannada', sans-serif; font-size: 1.2rem; line-height: 1.6; color: var(--text-soft); }
 
+    /* NEW: Help Section Styling */
+    .help-box { text-align: left; margin-top: 2rem; }
+    .help-box h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--blue-deep); margin-bottom: 0.5rem; }
+    .help-box p { color: var(--text-soft); font-size: 1rem; margin-bottom: 1.5rem; }
+    .help-btn { background: var(--blue-deep); color: #fff; border: none; padding: 0.8rem 2rem; border-radius: 50px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.3s; display: block; margin: 2rem auto 0; }
+    .help-btn:hover { background: var(--blue); }
+
     .nav-grid { max-width: 1100px; margin: 4rem auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 2rem; padding: 0 1rem 4rem; position: relative; z-index: 2; }
     .nav-grid a { text-decoration: none; color: inherit; text-align: center; position: relative; display: block; }
     .nav-grid img { max-width: 100%; height: auto; border-radius: 8px; aspect-ratio: 4/5; object-fit: cover; margin-bottom: 1rem; transition: filter 300ms; }
@@ -180,6 +187,25 @@
       <span class="eyebrow-kn">ನಮ್ಮ ಪ್ರತಿಜ್ಞೆ</span>
       <p class="manifesto__text">We do not measure the years by the exams we took, but by the late-night laughter, the shared struggles, and the friendships that will last a lifetime.</p>
       <p class="manifesto__text-kn">ನಾವು ವರ್ಷಗಳನ್ನು ನಾವು ತೆಗೆದುಕೊಂಡ ಪರೀಕ್ಷೆಗಳಿಂದ ಅಲ್ಲ, ಬದಲಾಗಿ ಅರ್ಧರಾತ್ರಿಯ ನಗು, ಹಂಚಿಕೊಂಡ ಹೋರಾಟ ಮತ್ತು ಜೀವಮಾನದುದ್ದಕ್ಕೂ ಇರುವ ಸ್ನೇಹದಿಂದ ಅಳೆಯುತ್ತೇವೆ.</p>
+    </div>
+  </section>
+
+  <!-- NEW: Help & Support Section -->
+  <section class="manifesto-section" style="padding-top: 0;">
+    <div class="manifesto">
+      <span class="eyebrow">Help & Support · ಸಹಾಯ</span>
+      <div class="help-box">
+        <h3>How do I install the app?</h3>
+        <p>On mobile, click the three dots in your browser and select "Add to Home Screen". On desktop, click the download icon in the URL bar to install it as an app.</p>
+        
+        <h3>How do I change my background?</h3>
+        <p>Click the "Change Background" button in the top left corner to upload your own custom image. It will be saved on your device.</p>
+        
+        <h3>Why can't I see the chat?</h3>
+        <p>You need to register an account on the "Night Chats" page to start chatting with your batchmates.</p>
+        
+        <button class="help-btn" onclick="reportHomepageProblem()">⚠️ Report a Problem</button>
+      </div>
     </div>
   </section>
 
@@ -284,7 +310,6 @@
     });
 
     // --- Graduation Countdown Logic with Local Storage ---
-    // Checks local storage for a saved date, defaults to May 31, 2027 if not found
     let countdownDateStr = safeStorage.get('college_grad_date') || "May 31, 2027 10:00:00";
     let countdownDate = new Date(countdownDateStr).getTime();
 
@@ -317,7 +342,6 @@
     }
 
     function setGraduationDate() {
-      // Format the current date to YYYY-MM-DD for the prompt input
       const currentDate = new Date(countdownDateStr).toISOString().split('T')[0];
       const inputDate = prompt("Enter your graduation date (YYYY-MM-DD):", currentDate);
 
@@ -325,13 +349,11 @@
         const newDate = new Date(inputDate + "T10:00:00");
         if (!isNaN(newDate.getTime())) {
           const newDateStr = newDate.toString();
-          // Save to Local Storage!
           safeStorage.set('college_grad_date', newDateStr);
           countdownDateStr = newDateStr;
           countdownDate = newDate.getTime();
           updateCountdownText();
 
-          // Restore the timer boxes if it was previously graduated
           document.getElementById('countdownTimer').innerHTML = `
             <div class="time-box"><span id="days">00</span><small>Days</small></div>
             <div class="time-box"><span id="hours">00</span><small>Hours</small></div>
@@ -349,6 +371,17 @@
     updateCountdownText();
     setInterval(updateCountdown, 1000);
     updateCountdown();
+
+    // --- NEW: Report a Problem Logic ---
+    function reportHomepageProblem() {
+      const issue = prompt("Describe the problem you are facing:");
+      if (issue && issue.trim()) {
+        let siteReports = JSON.parse(safeStorage.get('college_site_reports') || '[]');
+        siteReports.push({ reporter: 'Guest (Homepage)', issue: issue.trim(), timestamp: Date.now() });
+        safeStorage.set('college_site_reports', JSON.stringify(siteReports));
+        alert("Thank you! Your problem has been reported to the admin.");
+      }
+    }
 
     // 3D Background Optimized for Mobile
     let bgScene, bgCamera, bgRenderer, petals3D = []; let mouseX3D = 0, mouseY3D = 0; const isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
