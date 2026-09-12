@@ -27,7 +27,6 @@
     .login-btn:hover { background: var(--blue); }
 
     .dashboard { position: relative; z-index: 2; padding: 8rem 2rem 4rem; max-width: 1200px; margin: 0 auto; display: none; }
-    .dashboard.active { display: block; }
     .dash-header { text-align: center; margin-bottom: 3rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
     .dash-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--text); }
     .dash-header p { color: var(--text-mute); }
@@ -42,6 +41,9 @@
 
     .section { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--line-soft); overflow-x: auto; }
     .section h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--blue-deep); margin-bottom: 1.5rem; border-bottom: 1px solid var(--line-soft); padding-bottom: 0.5rem; }
+    .help-box { margin-bottom: 1.5rem; }
+    .help-box strong { color: var(--blue-deep); font-family: 'Inter', sans-serif; font-size: 1rem; }
+    .help-box p { color: var(--text-soft); margin-top: 0.3rem; font-size: 0.9rem; }
 
     .data-table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 0.9rem; min-width: 600px; }
     .data-table th { text-align: left; padding: 0.8rem; border-bottom: 1px solid var(--line); color: var(--text-soft); font-weight: 500; }
@@ -153,6 +155,36 @@
       <div class="media-grid" id="reelsGrid"></div>
     </div>
 
+    <!-- NEW: Site Problems & Feedback Section -->
+    <div class="section">
+      <h3>Site Problems & User Feedback</h3>
+      <table class="data-table">
+        <thead><tr><th>Reporter</th><th>Issue Description</th><th>Time</th><th>Action</th></tr></thead>
+        <tbody id="siteReportsTable"></tbody>
+      </table>
+    </div>
+
+    <!-- NEW: Help & Support Section -->
+    <div class="section" style="text-align: left;">
+      <h3>Help & Support</h3>
+      <div class="help-box">
+        <strong>How do I block a user?</strong>
+        <p>Go to the "Registered Users" table, find the user, and click the "Block" button. The user will not be able to log in until you click "Activate".</p>
+      </div>
+      <div class="help-box">
+        <strong>How do I delete a reported message?</strong>
+        <p>Go to the "Reported Messages" table, review the message, and click "Dismiss" to remove the report, or "Delete" to remove the actual message from the chat.</p>
+      </div>
+      <div class="help-box">
+        <strong>What happens if I click "Wipe All Data"?</strong>
+        <p>This will permanently delete ALL users, messages, quotes, photos, and reels from this browser. This action cannot be undone. Use this only if you want to completely reset the site.</p>
+      </div>
+      <div class="help-box">
+        <strong>Why can't I see newly registered users?</strong>
+        <p>If you are testing locally (file://), browsers block local storage sharing. Host the site on GitHub Pages or use a local server (Live Server) for data to sync across pages.</p>
+      </div>
+    </div>
+
     <button class="btn-danger-large" onclick="wipeAll()">⚠️ Wipe All Data (Reset Site)</button>
   </div>
 
@@ -162,17 +194,14 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    // Force HTTPS Security
-    if (location.protocol !== 'https:' && location.hostname !== '' && location.hostname !== 'localhost' && !location.hostname.startsWith('127.')) { location.replace(`https://${location.hostname}${location.pathname}${location.search}`); }
-
-    // Safe storage wrapper
+    if (location.protocol === 'http:' && !location.hostname.includes('localhost') && !location.hostname.startsWith('127.')) { location.replace(`https://${location.hostname}${location.pathname}${location.search}`); }
+    
     const safeStorage = {
       get: (k) => { try { return localStorage.getItem(k); } catch(e) { return null; } },
       set: (k, v) => { try { localStorage.setItem(k, v); } catch(e) { console.warn("Storage full"); } },
       remove: (k) => { try { localStorage.removeItem(k); } catch(e) {} }
     };
 
-    // 3D Background Optimized for Mobile
     let bgScene, bgCamera, bgRenderer, petals3D = []; let mouseX3D = 0, mouseY3D = 0; const isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     function init3DBackground() {
       try {
@@ -214,17 +243,16 @@
     addEventListener('mousemove', e => { mouseX3D = (e.clientX / innerWidth - 0.5); mouseY3D = (e.clientY / innerHeight - 0.5); });
     init3DBackground();
 
-    const ADMIN_PASS = "rootadidev~";
     function checkPass() {
       const pass = document.getElementById('adminPass').value;
-      if (pass === ADMIN_PASS) {
+      if (pass === "royalmech") {
         document.getElementById('loginView').style.display = 'none';
-        document.getElementById('dashboardView').classList.add('active');
+        document.getElementById('dashboardView').style.display = 'block';
         loadDashboard();
       } else { alert("Incorrect Password"); }
     }
 
-    const K = { users: 'college_users', msgs: 'sky_whispers', quotes: 'college_quotes', photos: 'garden_memories_permanent', chats: 'college_private_chats', reports: 'college_reports' };
+    const K = { users: 'college_users', msgs: 'sky_whispers', quotes: 'college_quotes', photos: 'garden_memories_permanent', chats: 'college_private_chats', reports: 'college_reports', siteReports: 'college_site_reports' };
 
     function loadDashboard() {
       let users = JSON.parse(safeStorage.get(K.users) || '[]');
@@ -232,6 +260,7 @@
       let quotes = JSON.parse(safeStorage.get(K.quotes) || '[]');
       let photos = JSON.parse(safeStorage.get(K.photos) || '[]');
       let reports = JSON.parse(safeStorage.get(K.reports) || '[]');
+      let siteReports = JSON.parse(safeStorage.get(K.siteReports) || '[]');
 
       document.getElementById('statUsers').innerText = users.length;
       document.getElementById('statMsgs').innerText = msgs.length;
@@ -243,8 +272,8 @@
         const status = u.status || 'active';
         let statusBadge = `<span class="status-badge status-${status}">${status}</span>`;
         let actions = '';
-        if (status === 'active') { actions = `<button class="btn-warn" onclick="setUserStatus(${i}, 'blocked')">Block</button><button class="btn-warn" onclick="setUserStatus(${i}, 'deactivated')">Deactivate</button>`; }
-        else if (status === 'blocked') { actions = `<button class="btn-success" onclick="setUserStatus(${i}, 'active')">Activate</button><button class="btn-warn" onclick="setUserStatus(${i}, 'deactivated')">Deactivate</button>`; }
+        if (status === 'active') { actions = `<button class="btn-warn" onclick="setUserStatus(${i}, 'blocked')">Block</button><button class="btn-warn" onclick="setUserStatus(${i}, 'deactivated')">Deactivate</button>`; } 
+        else if (status === 'blocked') { actions = `<button class="btn-success" onclick="setUserStatus(${i}, 'active')">Activate</button><button class="btn-warn" onclick="setUserStatus(${i}, 'deactivated')">Deactivate</button>`; } 
         else if (status === 'deactivated') { actions = `<button class="btn-success" onclick="setUserStatus(${i}, 'active')">Activate</button><button class="btn-warn" onclick="setUserStatus(${i}, 'blocked')">Block</button>`; }
         actions += `<button class="btn-delete" onclick="delUser(${i})">Delete</button>`;
         usersHTML += `<tr><td>${u.uid}</td><td>${u.username}</td><td>${u.name}</td><td>${u.phone || 'N/A'}</td><td>${u.branch || 'N/A'}</td><td>${statusBadge}</td><td><div class="action-btns">${actions}</div></td></tr>`;
@@ -267,6 +296,16 @@
       photos.forEach((p, i) => { photosHTML += `<div class="media-item"><img src="${p.src}"><button class="btn-delete" onclick="delPhoto(${i})">×</button></div>`; });
       document.getElementById('photosGrid').innerHTML = photosHTML || '<p class="no-data">No photos uploaded</p>';
 
+      // NEW: Render Site Reports
+      let siteReportsHTML = '';
+      siteReports.forEach((r, i) => { 
+        const reporter = users.find(u => u.uid === r.reporter); 
+        const reporterName = reporter ? reporter.name : r.reporter; 
+        const time = new Date(r.timestamp).toLocaleString(); 
+        siteReportsHTML += `<tr><td>${reporterName}</td><td>${r.issue}</td><td>${time}</td><td><button class="btn-delete" onclick="delSiteReport(${i})">Dismiss</button></td></tr>`; 
+      });
+      document.getElementById('siteReportsTable').innerHTML = siteReportsHTML || '<tr><td colspan="4" class="no-data">No site problems reported</td></tr>';
+
       loadReels();
     }
 
@@ -284,6 +323,7 @@
     function delReport(i) { let reports = JSON.parse(safeStorage.get(K.reports) || '[]'); reports.splice(i, 1); safeStorage.set(K.reports, JSON.stringify(reports)); loadDashboard(); }
     function delQuote(i) { let quotes = JSON.parse(safeStorage.get(K.quotes) || '[]'); quotes.splice(i, 1); safeStorage.set(K.quotes, JSON.stringify(quotes)); loadDashboard(); }
     function delPhoto(i) { let photos = JSON.parse(safeStorage.get(K.photos) || '[]'); photos.splice(i, 1); safeStorage.set(K.photos, JSON.stringify(photos)); loadDashboard(); }
+    function delSiteReport(i) { let siteReports = JSON.parse(safeStorage.get(K.siteReports) || '[]'); siteReports.splice(i, 1); safeStorage.set(K.siteReports, JSON.stringify(siteReports)); loadDashboard(); }
 
     let db;
     function loadReels() {
@@ -294,10 +334,10 @@
       } catch(err) { console.warn("IndexedDB blocked"); }
     }
     function delReel(id) { let tx = db.transaction("reels", "readwrite"); let store = tx.objectStore("reels"); store.delete(id); tx.oncomplete = () => loadDashboard(); }
-
+    
     function wipeAll() {
       if (!confirm("ARE YOU ABSOLUTELY SURE? This will delete ALL users, messages, quotes, photos, and reels from this browser.")) return;
-      safeStorage.remove(K.users); safeStorage.remove(K.msgs); safeStorage.remove(K.quotes); safeStorage.remove(K.photos); safeStorage.remove(K.chats); safeStorage.remove(K.reports);
+      safeStorage.remove(K.users); safeStorage.remove(K.msgs); safeStorage.remove(K.quotes); safeStorage.remove(K.photos); safeStorage.remove(K.chats); safeStorage.remove(K.reports); safeStorage.remove(K.siteReports);
       let req = indexedDB.deleteDatabase("CollegeReelsDB"); req.onsuccess = () => { alert("All data has been wiped."); loadDashboard(); };
     }
   </script>
